@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ITSLP – Sistema de Mantenimiento</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+  <style>
+    /* ══════════════════════════════════════════
+       VARIABLES
+    ══════════════════════════════════════════ */
+    :root {
+      --green:      #27AE60;
+      --green-dk:   #1E8449;
+      --green-lt:   #EAFAF1;
+      --purple:     #7B2FBE;
+      --purple-lt:  #EDE5F8;
+      --blue:       #2471A3;
+      --blue-lt:    #EAF4FB;
+      --orange:     #E67E22;
+      --orange-lt:  #FEF5E7;
+      --text:       #1A1A2E;
+      --text-lt:    #7A7A9D;
+      --border:     #DDE3EC;
+      --white:      #FFFFFF;
+      --bg:         #F0F4F8;
+      --radius:     18px;
+      --radius-sm:  10px;
+      --shadow:     0 20px 60px rgba(0,0,0,.13);
+      --shadow-sm:  0 4px 16px rgba(0,0,0,.08);
+    }
+
+    /* ══════════════════════════════════════════
+       RESET & BASE
+    ══════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      background: #0F1923;
+    }
+
+    /* ══════════════════════════════════════════
+       FONDO ANIMADO
+    ══════════════════════════════════════════ */
+    .bg-canvas {
+      position: fixed; inset: 0; z-index: 0;
+      background: linear-gradient(135deg, #0F1923 0%, #1A2D3D 50%, #0F1923 100%);
+    }
+    .bg-canvas::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 30%, rgba(39,174,96,.18) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 70%, rgba(36,113,163,.18) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 50% 10%, rgba(123,47,190,.12) 0%, transparent 55%);
+      animation: bgPulse 8s ease-in-out infinite alternate;
+    }
+    @keyframes bgPulse {
+      from { opacity: .7; }
+      to   { opacity: 1; }
+    }
+    /* Puntos de fondo */
+    .bg-dots {
+      position: absolute; inset: 0;
+      background-image: radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+    /* Círculos flotantes decorativos */
+    .blob {
+      position: absolute; border-radius: 50%;
+      filter: blur(60px); opacity: .25;
+      animation: float 10s ease-in-out infinite alternate;
+    }
+    .blob1 { width:320px; height:320px; background:#27AE60; top:-80px; left:-80px; animation-delay:0s; }
+    .blob2 { width:260px; height:260px; background:#2471A3; bottom:-60px; right:-60px; animation-delay:3s; }
+    .blob3 { width:180px; height:180px; background:#7B2FBE; top:40%; right:10%; animation-delay:6s; }
+    @keyframes float {
+      from { transform: translate(0,0) scale(1); }
+      to   { transform: translate(20px, -20px) scale(1.06); }
+    }
+
+    /* ══════════════════════════════════════════
+       CARD PRINCIPAL
+    ══════════════════════════════════════════ */
+    .card {
+      position: relative; z-index: 10;
+      width: 100%; max-width: 420px;
+      background: rgba(255,255,255,.97);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      animation: cardIn .55s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(40px) scale(.96); }
+      to   { opacity: 1; transform: translateY(0)   scale(1); }
+    }
+
+    /* ══════════════════════════════════════════
+       HEADER DE LA CARD
+    ══════════════════════════════════════════ */
+    .card-header {
+      padding: 32px 32px 20px;
+      text-align: center;
+      background: var(--white);
+    }
+    .logo-wrap {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 68px; height: 68px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--green) 0%, var(--green-dk) 100%);
+      box-shadow: 0 8px 24px rgba(39,174,96,.35);
+      margin-bottom: 14px;
+      animation: logoPop .6s cubic-bezier(.34,1.56,.64,1) .2s both;
+    }
+    @keyframes logoPop {
+      from { opacity:0; transform: scale(.5); }
+      to   { opacity:1; transform: scale(1); }
+    }
+    .logo-wrap i { font-size: 30px; color: #fff; }
+    .card-brand {
+      font-size: 28px; font-weight: 800;
+      color: var(--text); letter-spacing: .5px;
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+    .card-subtitle {
+      font-size: 13.5px; color: var(--text-lt);
+      font-weight: 500;
+    }
+
+    /* ══════════════════════════════════════════
+       PESTAÑAS
+    ══════════════════════════════════════════ */
+    .tabs {
+      display: flex;
+      margin: 0 24px;
+      background: #F3F6FA;
+      border-radius: 12px;
+      padding: 4px;
+      gap: 3px;
+    }
+    .tab-btn {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 4px;
+      padding: 9px 6px;
+      border: none; background: transparent;
+      border-radius: 9px;
+      cursor: pointer;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11px; font-weight: 600;
+      color: var(--text-lt);
+      transition: all .22s cubic-bezier(.4,0,.2,1);
+      position: relative;
+      white-space: nowrap;
+    }
+    .tab-btn i { font-size: 15px; transition: transform .22s; }
+    .tab-btn:hover { color: var(--text); background: rgba(255,255,255,.6); }
+    .tab-btn:hover i { transform: translateY(-1px); }
+
+    /* Colores por rol cuando está activo */
+    .tab-btn.active[data-tab="admin"] {
+      background: var(--white);
+      color: var(--purple);
+      box-shadow: 0 2px 10px rgba(0,0,0,.1);
+    }
+    .tab-btn.active[data-tab="tecnico"] {
+      background: var(--white);
+      color: var(--blue);
+      box-shadow: 0 2px 10px rgba(0,0,0,.1);
+    }
+    .tab-btn.active[data-tab="alumno"] {
+      background: var(--white);
+      color: var(--green);
+      box-shadow: 0 2px 10px rgba(0,0,0,.1);
+    }
+
+    /* ══════════════════════════════════════════
+       CONTENIDO DEL FORMULARIO
+    ══════════════════════════════════════════ */
+    .tab-content { display: none; padding: 22px 28px 28px; }
+    .tab-content.active {
+      display: block;
+      animation: fadeSlide .28s ease both;
+    }
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Banner de rol */
+    .role-banner {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 13px; font-weight: 600;
+    }
+    .role-banner.admin   { background: var(--purple-lt); color: var(--purple); }
+    .role-banner.tecnico { background: var(--blue-lt);   color: var(--blue); }
+    .role-banner.alumno  { background: var(--green-lt);  color: var(--green); }
+    .role-banner i { font-size: 16px; }
+
+    /* Campos */
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block;
+      font-size: 12.5px; font-weight: 700;
+      color: var(--text); margin-bottom: 6px;
+      letter-spacing: .2px;
+    }
+    .input-wrap {
+      position: relative;
+      display: flex; align-items: center;
+    }
+    .input-wrap .icon-left {
+      position: absolute; left: 13px;
+      font-size: 15px; color: var(--text-lt);
+      pointer-events: none;
+      transition: color .2s;
+    }
+    .input-wrap input {
+      width: 100%;
+      padding: 12px 14px 12px 40px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px; color: var(--text);
+      background: #FAFBFD;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+    }
+    .input-wrap input::placeholder { color: #B0B8C9; }
+    .input-wrap input:focus {
+      border-color: var(--active-color, var(--green));
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(var(--active-rgb, 39,174,96), .12);
+    }
+    .input-wrap input:focus + .icon-left,
+    .input-wrap .icon-left:has(+ input:focus) { color: var(--active-color, var(--green)); }
+    /* Focus icon color trick */
+    .input-wrap:focus-within .icon-left { color: var(--active-color, var(--green)); }
+
+    /* Ojo de contraseña */
+    .toggle-pass {
+      position: absolute; right: 12px;
+      background: none; border: none;
+      color: var(--text-lt); cursor: pointer;
+      font-size: 15px; padding: 4px;
+      transition: color .2s;
+    }
+    .toggle-pass:hover { color: var(--text); }
+
+    /* Colores de foco según tab activo */
+    #form-admin   { --active-color: var(--purple); --active-rgb: 123,47,190; }
+    #form-tecnico { --active-color: var(--blue);   --active-rgb: 36,113,163; }
+    #form-alumno  { --active-color: var(--green);  --active-rgb: 39,174,96; }
+
+    /* Botón principal */
+    .btn-login {
+      width: 100%; padding: 13px;
+      border: none; border-radius: var(--radius-sm);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 15px; font-weight: 700;
+      color: #fff; cursor: pointer;
+      margin-top: 6px;
+      position: relative; overflow: hidden;
+      transition: transform .18s, box-shadow .18s;
+    }
+    .btn-login::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background .18s;
+    }
+    .btn-login:hover { transform: translateY(-2px); }
+    .btn-login:hover::after { background: rgba(255,255,255,.08); }
+    .btn-login:active { transform: translateY(0); }
+
+    .btn-login.admin   { background: linear-gradient(135deg, #9B59B6, var(--purple)); box-shadow: 0 6px 20px rgba(123,47,190,.35); }
+    .btn-login.tecnico { background: linear-gradient(135deg, #3498DB, var(--blue));   box-shadow: 0 6px 20px rgba(36,113,163,.35); }
+    .btn-login.alumno  { background: linear-gradient(135deg, #2ECC71, var(--green));  box-shadow: 0 6px 20px rgba(39,174,96,.35); }
+
+    /* Spinner en botón */
+    .btn-login .spinner {
+      display: none;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      margin: 0 auto;
+    }
+    .btn-login.loading .btn-text { display: none; }
+    .btn-login.loading .spinner  { display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Link olvidé contraseña */
+    .forgot {
+      display: block; text-align: center;
+      margin-top: 16px;
+      font-size: 12.5px; color: var(--text-lt);
+      text-decoration: none;
+      transition: color .18s;
+    }
+    .forgot:hover { color: var(--text); text-decoration: underline; }
+
+    /* Mensaje de error */
+    .error-msg {
+      display: none;
+      background: #FEF0F0; border: 1px solid #FACACA;
+      border-radius: 8px; padding: 9px 13px;
+      font-size: 12.5px; color: #C0392B;
+      margin-bottom: 14px;
+      animation: shake .35s ease;
+    }
+    .error-msg.show { display: flex; align-items: center; gap: 8px; }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%,60%  { transform: translateX(-6px); }
+      40%,80%  { transform: translateX(6px); }
+    }
+
+    /* ══════════════════════════════════════════
+       FOOTER DE LA CARD
+    ══════════════════════════════════════════ */
+    .card-footer {
+      padding: 14px 28px 18px;
+      text-align: center;
+      border-top: 1px solid #F0F2F5;
+      font-size: 11.5px; color: #B0B8C9;
+    }
+
+    /* ══════════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════════ */
+    @media (max-width: 480px) {
+      body { padding: 12px; align-items: flex-start; padding-top: 40px; }
+      .card { max-width: 100%; border-radius: 20px; }
+      .card-header { padding: 26px 22px 16px; }
+      .card-brand { font-size: 24px; }
+      .logo-wrap { width: 58px; height: 58px; border-radius: 15px; }
+      .logo-wrap i { font-size: 26px; }
+      .tabs { margin: 0 16px; }
+      .tab-btn { font-size: 10px; padding: 8px 4px; }
+      .tab-btn i { font-size: 14px; }
+      .tab-content { padding: 18px 20px 24px; }
+    }
+
+    @media (max-width: 360px) {
+      .tab-btn span { display: none; }
+      .tab-btn { padding: 10px; }
+      .tab-btn i { font-size: 17px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Fondo -->
+  <div class="bg-canvas">
+    <div class="bg-dots"></div>
+    <div class="blob blob1"></div>
+    <div class="blob blob2"></div>
+    <div class="blob blob3"></div>
+  </div>
+
+  <!-- Card -->
+  <div class="card">
+
+    <!-- Header -->
+    <div class="card-header">
+      <div class="logo-wrap">
+        <i class="fas fa-wrench"></i>
+      </div>
+      <div class="card-brand">ITSLP</div>
+      <div class="card-subtitle">Sistema de Mantenimiento</div>
+    </div>
+
+    <!-- Pestañas -->
+    <div class="tabs" role="tablist" aria-label="Tipo de usuario">
+      <button class="tab-btn active" data-tab="admin" role="tab" aria-selected="true">
+        <i class="fas fa-user-shield"></i>
+        <span>Admin</span>
+      </button>
+      <button class="tab-btn" data-tab="tecnico" role="tab" aria-selected="false">
+        <i class="fas fa-hard-hat"></i>
+        <span>Técnico</span>
+      </button>
+      <button class="tab-btn" data-tab="alumno" role="tab" aria-selected="false">
+        <i class="fas fa-user-graduate"></i>
+        <span>Alumno</span>
+      </button>
+    </div>
+
+    <!-- ── FORM ADMIN ── -->
+    <div class="tab-content active" id="form-admin">
+      <div class="role-banner admin">
+        <i class="fas fa-shield-alt"></i>
+        Acceso de Administrador
+      </div>
+      <div class="error-msg" id="err-admin">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>Credenciales incorrectas. Intenta de nuevo.</span>
+      </div>
+      <div class="field">
+        <label for="admin-user">Correo institucional</label>
+        <div class="input-wrap">
+          <i class="fas fa-envelope icon-left"></i>
+          <input type="email" id="admin-user" placeholder="admin@itslp.edu.mx" autocomplete="username"/>
+        </div>
+      </div>
+      <div class="field">
+        <label for="admin-pass">Contraseña</label>
+        <div class="input-wrap">
+          <i class="fas fa-lock icon-left"></i>
+          <input type="password" id="admin-pass" placeholder="••••••••" autocomplete="current-password"/>
+          <button class="toggle-pass" type="button" onclick="togglePass('admin-pass', this)" aria-label="Mostrar contraseña">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+      </div>
+      <button class="btn-login admin" onclick="handleLogin('admin')">
+        <span class="btn-text">Iniciar Sesión</span>
+        <div class="spinner"></div>
+      </button>
+      <a href="#" class="forgot">¿Olvidaste tu contraseña?</a>
+    </div>
+
+    <!-- ── FORM TÉCNICO ── -->
+    <div class="tab-content" id="form-tecnico">
+      <div class="role-banner tecnico">
+        <i class="fas fa-tools"></i>
+        Acceso de Técnico de Mantenimiento
+      </div>
+      <div class="error-msg" id="err-tecnico">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>Número de empleado o contraseña incorrectos.</span>
+      </div>
+      <div class="field">
+        <label for="tec-user">Número de empleado</label>
+        <div class="input-wrap">
+          <i class="fas fa-id-badge icon-left"></i>
+          <input type="text" id="tec-user" placeholder="EMP-0001" autocomplete="username"/>
+        </div>
+      </div>
+      <div class="field">
+        <label for="tec-pass">Contraseña</label>
+        <div class="input-wrap">
+          <i class="fas fa-lock icon-left"></i>
+          <input type="password" id="tec-pass" placeholder="••••••••" autocomplete="current-password"/>
+          <button class="toggle-pass" type="button" onclick="togglePass('tec-pass', this)" aria-label="Mostrar contraseña">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+      </div>
+      <button class="btn-login tecnico" onclick="handleLogin('tecnico')">
+        <span class="btn-text">Iniciar Sesión</span>
+        <div class="spinner"></div>
+      </button>
+      <a href="#" class="forgot">¿Olvidaste tu contraseña?</a>
+    </div>
+
+    <!-- ── FORM ALUMNO ── -->
+    <div class="tab-content" id="form-alumno">
+      <div class="role-banner alumno">
+        <i class="fas fa-graduation-cap"></i>
+        Acceso de Alumno
+      </div>
+      <div class="error-msg" id="err-alumno">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>Número de control o contraseña incorrectos.</span>
+      </div>
+      <div class="field">
+        <label for="alu-user">Número de control</label>
+        <div class="input-wrap">
+          <i class="fas fa-id-card icon-left"></i>
+          <input type="text" id="alu-user" placeholder="221808**" autocomplete="username"
+                 maxlength="8" inputmode="numeric"/>
+        </div>
+      </div>
+      <div class="field">
+        <label for="alu-pass">Contraseña</label>
+        <div class="input-wrap">
+          <i class="fas fa-lock icon-left"></i>
+          <input type="password" id="alu-pass" placeholder="••••••••" autocomplete="current-password"/>
+          <button class="toggle-pass" type="button" onclick="togglePass('alu-pass', this)" aria-label="Mostrar contraseña">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+      </div>
+      <button class="btn-login alumno" onclick="handleLogin('alumno')">
+        <span class="btn-text">Iniciar Sesión</span>
+        <div class="spinner"></div>
+      </button>
+      <a href="#" class="forgot">¿Olvidaste tu contraseña?</a>
+    </div>
+
+    <!-- Footer -->
+    <div class="card-footer">
+      ITSLP &copy; 2025 · Sistema de Gestión de Mantenimiento
+    </div>
+
+  </div><!-- /card -->
+
+  <script>
+    /* ── Cambio de pestaña ── */
+    const tabs    = document.querySelectorAll('.tab-btn');
+    const forms   = document.querySelectorAll('.tab-content');
+
+    tabs.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+        forms.forEach(f => f.classList.remove('active'));
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected','true');
+        document.getElementById('form-' + btn.dataset.tab).classList.add('active');
+        // Limpiar errores al cambiar pestaña
+        document.querySelectorAll('.error-msg').forEach(e => e.classList.remove('show'));
+      });
+    });
+
+    /* ── Toggle contraseña ── */
+    function togglePass(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const icon  = btn.querySelector('i');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+      }
+    }
+
+    /* ── Simulación de login ── */
+    function handleLogin(role) {
+      const btn = document.querySelector(`#form-${role} .btn-login`);
+      const err = document.getElementById(`err-${role}`);
+
+      // Validar campos vacíos
+      const inputs = document.querySelectorAll(`#form-${role} input`);
+      let empty = false;
+      inputs.forEach(i => { if (!i.value.trim()) { empty = true; i.style.borderColor = '#E74C3C'; } else { i.style.borderColor = ''; } });
+      if (empty) {
+        err.querySelector('span').textContent = 'Por favor completa todos los campos.';
+        err.classList.add('show');
+        return;
+      }
+
+      // Estado de carga
+      err.classList.remove('show');
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      // Simular llamada al servidor
+      setTimeout(() => {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+        // Aquí conectarías con tu backend:
+        // window.location.href = 'dashboard_' + role + '.html';
+        alert(`✅ Acceso como ${role} — conecta aquí con tu backend.`);
+      }, 1800);
+    }
+
+    /* ── Enter en inputs ── */
+    document.querySelectorAll('input').forEach(input => {
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          const form = input.closest('.tab-content');
+          const role = form.id.replace('form-','');
+          handleLogin(role);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
